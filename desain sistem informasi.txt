@@ -1,0 +1,20 @@
+buat sistem pembayaran siswa SMK Muhammadiyah Mungkid dengan fitur :
+1. Manajemen :
+- Tahun ajaran
+- Rombel & jurusan
+- murid (kategori : reguler, beasiswa 50%, beasiswa 100%)
+- user role : admin, teller, kepsek, murid
+2. Tagihan :
+- jenis tagihan dan nominal : SPP(bulanan), tagihan lain (custom, bisa dicicil), tabungan. checkbox apakah jenis tagihan ini bisa didiskon.
+- Apply tagihan SPP dan tagihan lain : apply pada rombel tertentu (checkbox), apply pada kategori siswa tertentu.
+- Apply diskon : berdasarkan kategori murid, pilih persentase diskon (50%, 100%) berdasar tagihan yang bisa didiskon.
+3. Dashboard
+- Chart pembayaran harian, mingguan, bulanan.
+- Progress bar pembayaran per rombel
+4. Pembayaran : halaman untuk melakukan pembayaran beserta cetak kuitansi ukuran A5 landscape.
+5. Laporan arus kas harian, bulanan, tahunan.
+6. Rekap pembayaran per siswa, per rombel, per jenis tagihan
+7. Pengaturan (identitas sekolah, nama kepsek, dsb).
+
+- Gunakan Laravel+bootstrap css dengan konsep design flat. Gunakan beberapa warna pastel yang selaras sebagai primary color dan aksen.
+- Saat ini sudah terinstall laravel13+boost, php8.4, dan composer, nodejs 25.9.

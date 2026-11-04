@@ -1,0 +1,404 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+:root {
+    /* Harmonious Pastel Color Palette */
+    --pastel-primary: #4e7d6b;
+    --pastel-primary-hover: #41695a;
+    --pastel-primary-light: #edf4f1;
+    --pastel-primary-text: #2f4d42;
+
+    --pastel-accent: #5b8fb9;
+    --pastel-accent-hover: #4b789d;
+    --pastel-accent-light: #eef5fa;
+    --pastel-accent-text: #2b5577;
+
+    --pastel-success: #58a389;
+    --pastel-success-light: #eef7f3;
+    --pastel-success-text: #2b5d4c;
+
+    --pastel-warning: #e09f58;
+    --pastel-warning-light: #fdf5ec;
+    --pastel-warning-text: #8c5b23;
+
+    --pastel-danger: #d9737d;
+    --pastel-danger-light: #fcf0f2;
+    --pastel-danger-text: #893039;
+
+    --pastel-info: #6da5c0;
+    --pastel-info-light: #f0f7fa;
+
+    --pastel-lavender: #8e8bb8;
+    --pastel-lavender-light: #f3f2f9;
+
+    --pastel-bg: #f8fafc;
+    --pastel-surface: #ffffff;
+    --pastel-border: #e2e8f0;
+    --pastel-text: #334155;
+    --pastel-text-muted: #64748b;
+
+    --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-family-base);
+    background-color: var(--pastel-bg);
+    color: var(--pastel-text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Flat Design Elements */
+.card {
+    background-color: var(--pastel-surface);
+    border: 1px solid var(--pastel-border);
+    border-radius: 12px;
+    box-shadow: none !important;
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--pastel-border);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+.card-footer {
+    background-color: transparent;
+    border-top: 1px solid var(--pastel-border);
+}
+
+/* Flat Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.15s ease-in-out;
+    box-shadow: none !important;
+}
+
+.btn-pastel-primary {
+    background-color: var(--pastel-primary);
+    border-color: var(--pastel-primary);
+    color: #ffffff;
+}
+
+.btn-pastel-primary:hover,
+.btn-pastel-primary:focus {
+    background-color: var(--pastel-primary-hover);
+    border-color: var(--pastel-primary-hover);
+    color: #ffffff;
+}
+
+.btn-pastel-primary-light {
+    background-color: var(--pastel-primary-light);
+    border-color: var(--pastel-primary-light);
+    color: var(--pastel-primary-text);
+}
+
+.btn-pastel-primary-light:hover {
+    background-color: #dbebe5;
+    color: var(--pastel-primary-text);
+}
+
+.btn-pastel-accent {
+    background-color: var(--pastel-accent);
+    border-color: var(--pastel-accent);
+    color: #ffffff;
+}
+
+.btn-pastel-accent:hover {
+    background-color: var(--pastel-accent-hover);
+    border-color: var(--pastel-accent-hover);
+    color: #ffffff;
+}
+
+.btn-pastel-warning {
+    background-color: var(--pastel-warning);
+    border-color: var(--pastel-warning);
+    color: #ffffff;
+}
+
+.btn-pastel-warning:hover {
+    background-color: #cb8944;
+    border-color: #cb8944;
+    color: #ffffff;
+}
+
+.btn-pastel-danger {
+    background-color: var(--pastel-danger);
+    border-color: var(--pastel-danger);
+    color: #ffffff;
+}
+
+.btn-pastel-danger:hover {
+    background-color: #c75c67;
+    border-color: #c75c67;
+    color: #ffffff;
+}
+
+.btn-light {
+    background-color: #f1f5f9;
+    border-color: var(--pastel-border);
+    color: var(--pastel-text);
+}
+
+.btn-light:hover {
+    background-color: #e2e8f0;
+    color: var(--pastel-text);
+}
+
+/* Flat Badges */
+.badge {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    font-size: 0.8rem;
+}
+
+.badge-pastel-primary {
+    background-color: var(--pastel-primary-light);
+    color: var(--pastel-primary-text);
+}
+
+.badge-pastel-accent {
+    background-color: var(--pastel-accent-light);
+    color: var(--pastel-accent-text);
+}
+
+.badge-pastel-success {
+    background-color: var(--pastel-success-light);
+    color: var(--pastel-success-text);
+}
+
+.badge-pastel-warning {
+    background-color: var(--pastel-warning-light);
+    color: var(--pastel-warning-text);
+}
+
+.badge-pastel-danger {
+    background-color: var(--pastel-danger-light);
+    color: var(--pastel-danger-text);
+}
+
+.badge-pastel-lavender {
+    background-color: var(--pastel-lavender-light);
+    color: #4b477b;
+}
+
+/* Flat Tables */
+.table {
+    margin-bottom: 0;
+    color: var(--pastel-text);
+}
+
+.table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--pastel-border);
+    padding: 0.75rem 1rem;
+}
+
+.table td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--pastel-border);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Flat Forms */
+.form-control,
+.form-select {
+    border: 1px solid var(--pastel-border);
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    color: var(--pastel-text);
+    box-shadow: none !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--pastel-primary);
+    outline: 0;
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #475569;
+    margin-bottom: 0.4rem;
+}
+
+/* Sidebar & Navigation */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    border-right: 1px solid var(--pastel-border);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-sidebar-brand {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--pastel-border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--pastel-primary);
+    text-decoration: none;
+}
+
+.app-sidebar-brand i {
+    font-size: 1.4rem;
+}
+
+.sidebar-nav {
+    padding: 1rem 0.75rem;
+    flex-grow: 1;
+}
+
+.nav-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    padding: 0.65rem 0.75rem 0.35rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.85rem;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    margin-bottom: 0.25rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.sidebar-link i {
+    font-size: 1.15rem;
+    color: #64748b;
+    transition: color 0.15s ease-in-out;
+}
+
+.sidebar-link:hover {
+    background-color: var(--pastel-primary-light);
+    color: var(--pastel-primary-text);
+}
+
+.sidebar-link:hover i {
+    color: var(--pastel-primary);
+}
+
+.sidebar-link.active {
+    background-color: var(--pastel-primary);
+    color: #ffffff;
+}
+
+.sidebar-link.active i {
+    color: #ffffff;
+}
+
+.app-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.app-topbar {
+    height: 64px;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--pastel-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.75rem;
+}
+
+.app-main {
+    padding: 1.75rem;
+    flex-grow: 1;
+}
+
+/* Stat Cards */
+.stat-card {
+    border: 1px solid var(--pastel-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+/* Modals */
+.modal-content {
+    border: 1px solid var(--pastel-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--pastel-border);
+    padding: 1rem 1.25rem;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--pastel-border);
+    padding: 0.85rem 1.25rem;
+}
+
+/* Pagination */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    border: 1px solid var(--pastel-border);
+    color: var(--pastel-text);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    margin: 0 2px;
+}
+
+.page-item.active .page-link {
+    background-color: var(--pastel-primary);
+    border-color: var(--pastel-primary);
+    color: #ffffff;
+}
+
+.page-link:hover {
+    background-color: var(--pastel-primary-light);
+    color: var(--pastel-primary-text);
+}
