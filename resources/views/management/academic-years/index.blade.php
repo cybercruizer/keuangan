@@ -22,7 +22,6 @@
             <thead>
                 <tr>
                     <th>Tahun Ajaran</th>
-                    <th>Semester</th>
                     <th>Periode Tanggal</th>
                     <th>Jumlah Rombel</th>
                     <th>Status</th>
@@ -33,11 +32,6 @@
                 @forelse($academicYears as $year)
                     <tr>
                         <td class="fw-bold">{{ $year->name }}</td>
-                        <td>
-                            <span class="badge {{ $year->semester === 'ganjil' ? 'badge-pastel-primary' : 'badge-pastel-accent' }}">
-                                Semester {{ ucfirst($year->semester) }}
-                            </span>
-                        </td>
                         <td class="text-muted small">
                             @if($year->start_date && $year->end_date)
                                 {{ $year->start_date->format('d M Y') }} s/d {{ $year->end_date->format('d M Y') }}

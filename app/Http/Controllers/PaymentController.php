@@ -10,6 +10,7 @@ use App\Models\SchoolSetting;
 use App\Models\Student;
 use App\Models\StudentBill;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +60,44 @@ class PaymentController extends Controller
         return view('payments.index', compact('payments', 'tellers', 'totalCollected', 'totalTransactions'));
     }
 
+    /**
+     * Search students dynamically for payment suggestion dropdown.
+     */
+    public function searchStudents(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->input('q', ''));
+
+        $query = Student::with(['classRoom.major'])
+            ->where('status', 'aktif');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $query->orderBy('name')
+            ->limit(15)
+            ->get();
+
+        $data = $students->map(function (Student $student) {
+            return [
+                'id' => $student->id,
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'nisn' => $student->nisn,
+                'class_name' => $student->classRoom?->name ?? 'Tanpa Kelas',
+                'major_name' => $student->classRoom?->major?->name ?? '-',
+                'category_label' => $student->category_label,
+                'select_url' => route('payments.create', ['student_id' => $student->id]),
+            ];
+        });
+
+        return response()->json($data);
+    }
+
     public function create(Request $request): View
     {
         $selectedStudent = null;
@@ -76,14 +115,7 @@ class PaymentController extends Controller
                 ->get();
         }
 
-        // Students list for quick lookup dropdown / search
-        $students = Student::with('classRoom')
-            ->where('status', 'aktif')
-            ->orderBy('name')
-            ->take(100)
-            ->get();
-
-        return view('payments.create', compact('selectedStudent', 'unpaidBills', 'students'));
+        return view('payments.create', compact('selectedStudent', 'unpaidBills'));
     }
 
     public function store(Request $request): RedirectResponse

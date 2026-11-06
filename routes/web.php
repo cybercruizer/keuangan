@@ -29,6 +29,14 @@ Route::middleware('auth')->group(function () {
 
     // Phase 4: Billing Module (Tagihan & Diskon)
     Route::prefix('tagihan')->name('billing.')->group(function () {
+        // Template & Import Jenis Tagihan
+        Route::get('bill-types/template', [BillTypeController::class, 'downloadTemplate'])
+            ->name('bill-types.template')
+            ->middleware('role:admin');
+        Route::post('bill-types/import', [BillTypeController::class, 'import'])
+            ->name('bill-types.import')
+            ->middleware('role:admin');
+
         // Jenis Tagihan & Aturan Diskon
         Route::resource('bill-types', BillTypeController::class)
             ->except(['show'])
@@ -54,6 +62,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])
             ->name('index')
             ->middleware('role:admin,teller,kepsek');
+        Route::get('search-students', [PaymentController::class, 'searchStudents'])
+            ->name('search-students')
+            ->middleware('role:admin,teller');
         Route::get('create', [PaymentController::class, 'create'])
             ->name('create')
             ->middleware('role:admin,teller');
@@ -118,11 +129,23 @@ Route::middleware('auth')->group(function () {
             ->middleware('role:admin,kepsek');
 
         // Class Rooms (Rombel)
+        Route::get('class-rooms/template', [ClassRoomController::class, 'downloadTemplate'])
+            ->name('class-rooms.template')
+            ->middleware('role:admin,teller,kepsek');
+        Route::post('class-rooms/import', [ClassRoomController::class, 'import'])
+            ->name('class-rooms.import')
+            ->middleware('role:admin,teller');
         Route::resource('class-rooms', ClassRoomController::class)
             ->except(['show'])
             ->middleware('role:admin,teller,kepsek');
 
         // Students (Murid)
+        Route::get('students/template', [StudentController::class, 'downloadTemplate'])
+            ->name('students.template')
+            ->middleware('role:admin,teller,kepsek');
+        Route::post('students/import', [StudentController::class, 'import'])
+            ->name('students.import')
+            ->middleware('role:admin,teller');
         Route::resource('students', StudentController::class)
             ->middleware('role:admin,teller,kepsek');
 

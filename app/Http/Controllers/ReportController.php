@@ -10,13 +10,14 @@ use App\Models\Student;
 use App\Models\StudentBill;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
     /**
      * Rekap Pembayaran per Siswa
      */
-    public function students(Request $request): View
+    public function students(Request $request): View|StreamedResponse
     {
         $classRooms = ClassRoom::orderBy('name')->get();
         $academicYears = AcademicYear::orderByDesc('name')->get();
@@ -91,13 +92,48 @@ class ReportController extends Controller
             ]);
         }
 
+        if ($request->boolean('export')) {
+            $studentsAll = (clone $query)->orderBy('name')->get();
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename=rekap_pembayaran_siswa.csv',
+            ];
+
+            return response()->streamDownload(function () use ($studentsAll) {
+                $handle = fopen('php://output', 'w');
+                if ($handle === false) {
+                    return;
+                }
+                fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($handle, ['NIS', 'Nama Siswa', 'Rombel', 'Jurusan', 'Kategori', 'Wajib Bayar (Rp)', 'Sudah Dibayar (Rp)', 'Sisa Tunggakan (Rp)', 'Status Kelunasan']);
+                foreach ($studentsAll as $st) {
+                    $totalBilled = (float) $st->bills->sum('final_amount');
+                    $totalPaid = (float) $st->bills->sum('paid_amount');
+                    $remaining = max(0, $totalBilled - $totalPaid);
+                    $percentage = $totalBilled > 0 ? round(($totalPaid / $totalBilled) * 100, 1) : 100;
+                    fputcsv($handle, [
+                        $st->nis,
+                        $st->name,
+                        $st->classRoom?->name ?? '-',
+                        $st->classRoom?->major?->name ?? '-',
+                        $st->category_label,
+                        $totalBilled,
+                        $totalPaid,
+                        $remaining,
+                        $percentage.'%',
+                    ]);
+                }
+                fclose($handle);
+            }, 'rekap_pembayaran_siswa.csv', $headers);
+        }
+
         return view('reports.recaps.students', compact('students', 'classRooms', 'academicYears'));
     }
 
     /**
      * Rekap Pembayaran per Rombel
      */
-    public function classRooms(Request $request): View
+    public function classRooms(Request $request): View|StreamedResponse
     {
         $academicYears = AcademicYear::orderByDesc('name')->get();
         $selectedYearId = $request->input('academic_year_id', AcademicYear::where('is_active', true)->value('id'));
@@ -158,6 +194,35 @@ class ReportController extends Controller
             ]);
         }
 
+        if ($request->boolean('export')) {
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename=rekap_pembayaran_rombel.csv',
+            ];
+
+            return response()->streamDownload(function () use ($recapData) {
+                $handle = fopen('php://output', 'w');
+                if ($handle === false) {
+                    return;
+                }
+                fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($handle, ['Tingkat', 'Nama Rombel', 'Jurusan', 'Jumlah Murid', 'Total Tagihan (Rp)', 'Total Terbayar (Rp)', 'Sisa Tunggakan (Rp)', 'Persentase Kelunasan']);
+                foreach ($recapData as $row) {
+                    fputcsv($handle, [
+                        $row['class_room']->level,
+                        $row['class_room']->name,
+                        $row['class_room']->major?->name ?? '-',
+                        $row['students_count'],
+                        $row['total_billed'],
+                        $row['total_paid'],
+                        $row['total_remaining'],
+                        $row['percentage'].'%',
+                    ]);
+                }
+                fclose($handle);
+            }, 'rekap_pembayaran_rombel.csv', $headers);
+        }
+
         return view('reports.recaps.class-rooms', compact(
             'recapData',
             'academicYears',
@@ -172,7 +237,7 @@ class ReportController extends Controller
     /**
      * Rekap Pembayaran per Jenis Tagihan
      */
-    public function billTypes(Request $request): View
+    public function billTypes(Request $request): View|StreamedResponse
     {
         $academicYears = AcademicYear::orderByDesc('name')->get();
         $selectedYearId = $request->input('academic_year_id', AcademicYear::where('is_active', true)->value('id'));
@@ -225,6 +290,37 @@ class ReportController extends Controller
                 'headmasterNip' => SchoolSetting::get('headmaster_nip', '19680512 199303 1 004'),
                 'treasurerName' => SchoolSetting::get('treasurer_name', 'Siti Aminah, S.E.'),
             ]);
+        }
+
+        if ($request->boolean('export')) {
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename=rekap_pembayaran_tagihan.csv',
+            ];
+
+            return response()->streamDownload(function () use ($recapData) {
+                $handle = fopen('php://output', 'w');
+                if ($handle === false) {
+                    return;
+                }
+                fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($handle, ['Nama Tagihan', 'Tipe', 'Tarif Satuan (Rp)', 'Jml Tagihan', 'Jml Lunas', 'Total Tagihan (Rp)', 'Total Terbayar (Rp)', 'Sisa Tunggakan (Rp)', 'Persentase Kelunasan']);
+                foreach ($recapData as $row) {
+                    $bt = $row['bill_type'];
+                    fputcsv($handle, [
+                        $bt->name,
+                        strtoupper($bt->type),
+                        $bt->amount,
+                        $row['count_bills'],
+                        $row['count_paid'],
+                        $row['total_billed'],
+                        $row['total_paid'],
+                        $row['total_remaining'],
+                        $row['percentage'].'%',
+                    ]);
+                }
+                fclose($handle);
+            }, 'rekap_pembayaran_tagihan.csv', $headers);
         }
 
         return view('reports.recaps.bill-types', compact(

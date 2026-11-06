@@ -15,7 +15,6 @@ class AcademicYearController extends Controller
     {
         $academicYears = AcademicYear::withCount(['classRooms', 'studentBills'])
             ->orderByDesc('name')
-            ->orderByDesc('semester')
             ->paginate(10);
 
         return view('management.academic-years.index', compact('academicYears'));
@@ -29,8 +28,7 @@ class AcademicYearController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:20'],
-            'semester' => ['required', Rule::in(['ganjil', 'genap'])],
+            'name' => ['required', 'string', 'max:20', 'unique:academic_years,name'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'is_active' => ['boolean'],
@@ -61,8 +59,7 @@ class AcademicYearController extends Controller
     public function update(Request $request, AcademicYear $academicYear): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:20'],
-            'semester' => ['required', Rule::in(['ganjil', 'genap'])],
+            'name' => ['required', 'string', 'max:20', Rule::unique('academic_years', 'name')->ignore($academicYear->id)],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'is_active' => ['boolean'],
@@ -108,6 +105,6 @@ class AcademicYearController extends Controller
             $academicYear->update(['is_active' => true]);
         });
 
-        return back()->with('success', 'Tahun ajaran '.$academicYear->name.' ('.ucfirst($academicYear->semester).') berhasil diaktifkan.');
+        return back()->with('success', 'Tahun ajaran '.$academicYear->name.' berhasil diaktifkan.');
     }
 }

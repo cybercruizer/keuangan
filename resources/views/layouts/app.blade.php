@@ -10,15 +10,23 @@
 </head>
 <body>
     <div class="app-wrapper">
+        <!-- Sidebar Backdrop (Mobile) -->
+        <div class="sidebar-backdrop d-lg-none" id="sidebarBackdrop"></div>
+
         <!-- Sidebar -->
-        <aside class="app-sidebar">
-            <a href="{{ route('dashboard') }}" class="app-sidebar-brand">
-                <i class="bi bi-wallet2"></i>
-                <div class="lh-sm">
-                    <span class="d-block fw-bold text-dark" style="font-size: 0.95rem;">SI-KEUANGAN</span>
-                    <small class="text-muted fw-normal" style="font-size: 0.72rem;">SMK Muh Mungkid</small>
-                </div>
-            </a>
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="d-flex align-items-center justify-content-between border-bottom">
+                <a href="{{ route('dashboard') }}" class="app-sidebar-brand flex-grow-1 border-bottom-0">
+                    <i class="bi bi-wallet2"></i>
+                    <div class="lh-sm">
+                        <span class="d-block fw-bold text-dark" style="font-size: 0.95rem;">SI-KEUANGAN</span>
+                        <small class="text-muted fw-normal" style="font-size: 0.72rem;">SMK Muh Mungkid</small>
+                    </div>
+                </a>
+                <button type="button" class="btn btn-sm btn-light text-muted d-lg-none me-3" id="sidebarCloseBtn" aria-label="Tutup Menu">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
 
             <div class="sidebar-nav">
                 <div class="nav-section-title">Menu Utama</div>
@@ -136,8 +144,11 @@
         <div class="app-content">
             <!-- Topbar -->
             <header class="app-topbar">
-                <div class="d-flex align-items-center gap-3">
-                    <span class="fw-semibold text-secondary" style="font-size: 0.95rem;">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-light border d-lg-none" id="sidebarToggleBtn" aria-label="Buka Menu" title="Menu Navigasi">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <span class="fw-semibold text-secondary text-truncate" style="font-size: 0.95rem;">
                         @yield('header_title', 'Dashboard')
                     </span>
                 </div>
@@ -147,16 +158,16 @@
                         $topActiveYear = \App\Models\AcademicYear::where('is_active', true)->first();
                     @endphp
                     @if($topActiveYear)
-                        <span class="badge badge-pastel-success d-inline-flex align-items-center gap-1 py-2 px-3">
+                        <span class="badge badge-pastel-success d-none d-md-inline-flex align-items-center gap-1 py-2 px-3">
                             <i class="bi bi-check-circle-fill"></i>
-                            <span>TA: {{ $topActiveYear->name }} ({{ ucfirst($topActiveYear->semester) }})</span>
+                            <span>TA: {{ $topActiveYear->name }}</span>
                         </span>
                     @endif
 
                     <div class="dropdown">
                         <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle"></i>
-                            <span>{{ auth()->user()->name }}</span>
+                            <span class="d-none d-sm-inline">{{ auth()->user()->name }}</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border shadow-none" style="border-radius: 8px;">
                             <li><h6 class="dropdown-header">Akun ({{ ucfirst(auth()->user()->role) }})</h6></li>
@@ -226,5 +237,60 @@
         </div>
     </div>
     @stack('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('appSidebar');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const closeBtn = document.getElementById('sidebarCloseBtn');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            function openSidebar() {
+                if (sidebar) sidebar.classList.add('show');
+                if (backdrop) backdrop.classList.add('show');
+                document.body.classList.add('sidebar-open');
+            }
+
+            function closeSidebar() {
+                if (sidebar) sidebar.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
+            }
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSidebar();
+                });
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    closeSidebar();
+                });
+            }
+
+            if (backdrop) {
+                backdrop.addEventListener('click', closeSidebar);
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) {
+                    closeSidebar();
+                }
+            });
+
+            if (sidebar) {
+                sidebar.querySelectorAll('.sidebar-link').forEach(function (link) {
+                    link.addEventListener('click', function () {
+                        if (window.innerWidth < 992) {
+                            closeSidebar();
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

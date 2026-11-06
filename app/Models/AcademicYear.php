@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'semester', 'is_active', 'start_date', 'end_date'])]
+#[Fillable(['name', 'is_active', 'start_date', 'end_date'])]
 class AcademicYear extends Model
 {
     /** @use HasFactory<AcademicYearFactory> */

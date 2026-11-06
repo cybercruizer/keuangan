@@ -19,7 +19,6 @@ class AcademicYearFactory extends Factory
     {
         return [
             'name' => '2025/2026',
-            'semester' => 'ganjil',
             'is_active' => true,
             'start_date' => '2025-07-01',
             'end_date' => '2026-06-30',

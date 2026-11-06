@@ -39,7 +39,7 @@
 
         <div class="text-center mb-3">
             <h5 class="fw-bold mb-0 text-uppercase">REKAPITULASI PEMBAYARAN PER ROMBEL</h5>
-            <small class="text-muted">Tahun Ajaran: {{ $selectedYear ? $selectedYear->name . ' (' . ucfirst($selectedYear->semester) . ')' : 'Semua Tahun' }} &bull; Dicetak: {{ date('d F Y') }}</small>
+            <small class="text-muted">Tahun Ajaran: {{ $selectedYear ? $selectedYear->name : 'Semua Tahun' }} &bull; Dicetak: {{ date('d F Y') }}</small>
         </div>
 
         <table class="table-report">

@@ -6,6 +6,7 @@ use App\Models\ClassRoom;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class StudentManagementTest extends TestCase
@@ -84,5 +85,52 @@ class StudentManagementTest extends TestCase
         $response = $this->actingAs($teller)->get(route('management.students.index'));
 
         $response->assertStatus(200);
+    }
+
+    public function test_admin_can_download_student_template(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->get(route('management.students.template'));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Disposition', 'attachment; filename=template_murid.csv');
+    }
+
+    public function test_admin_can_import_students_from_csv(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $classRoom = ClassRoom::factory()->create(['name' => 'X RPL 1']);
+
+        $csvContent = "nis,nisn,nama,jenis_kelamin,rombel,kategori,no_hp,nama_wali,no_hp_wali,alamat,status\n";
+        $csvContent .= "99001,0099001,Siswa Import 1,L,X RPL 1,reguler,08111,Wali 1,08222,Magelang,aktif\n";
+        $csvContent .= "99002,0099002,Siswa Import 2,P,X RPL 1,beasiswa_100,08333,Wali 2,08444,Mungkid,aktif\n";
+
+        $file = UploadedFile::fake()->createWithContent('murid.csv', $csvContent);
+
+        $response = $this->actingAs($admin)->post(route('management.students.import'), [
+            'file' => $file,
+        ]);
+
+        $response->assertRedirect(route('management.students.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('students', [
+            'nis' => '99001',
+            'name' => 'Siswa Import 1',
+            'gender' => 'L',
+            'class_room_id' => $classRoom->id,
+            'category' => 'reguler',
+            'status' => 'aktif',
+        ]);
+
+        $this->assertDatabaseHas('students', [
+            'nis' => '99002',
+            'name' => 'Siswa Import 2',
+            'gender' => 'P',
+            'class_room_id' => $classRoom->id,
+            'category' => 'beasiswa_100',
+            'status' => 'aktif',
+        ]);
     }
 }

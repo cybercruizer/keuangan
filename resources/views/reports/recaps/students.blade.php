@@ -9,7 +9,10 @@
         <h5 class="fw-bold mb-1">Rekap Pembayaran per Siswa</h5>
         <p class="text-muted small mb-0">Laporan tunggakan dan rekapitulasi kelunasan per peserta didik.</p>
     </div>
-    <div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('reports.recaps.students', array_merge(request()->all(), ['export' => 1])) }}" class="btn btn-light">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+        </a>
         <a href="{{ route('reports.recaps.students', array_merge(request()->all(), ['print' => 1])) }}" target="_blank" class="btn btn-light">
             <i class="bi bi-printer me-1"></i> Cetak Rekap Lengkap
         </a>

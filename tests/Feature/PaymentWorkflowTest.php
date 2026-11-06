@@ -157,4 +157,79 @@ class PaymentWorkflowTest extends TestCase
         $response->assertSee('Ahmad Fauzi');
         $response->assertSee('Dua Ratus Lima Puluh Ribu Rupiah');
     }
+
+    public function test_payment_create_page_renders_with_search_suggestion(): void
+    {
+        $teller = User::factory()->teller()->create();
+        $student = Student::factory()->create(['name' => 'Budi Pratama', 'nis' => '102938']);
+
+        $response = $this->actingAs($teller)->get(route('payments.create'));
+        $response->assertStatus(200);
+        $response->assertSee('1. Cari & Pilih Siswa', false);
+        $response->assertSee('student_search_input');
+        $response->assertDontSee('<select name="student_id"', false);
+
+        // Accessing with selected student
+        $responseSelected = $this->actingAs($teller)->get(route('payments.create', ['student_id' => $student->id]));
+        $responseSelected->assertStatus(200);
+        $responseSelected->assertSee('Budi Pratama');
+        $responseSelected->assertSee('102938');
+    }
+
+    public function test_teller_can_search_students_via_ajax(): void
+    {
+        $teller = User::factory()->teller()->create();
+        $classRoom = ClassRoom::factory()->create(['name' => 'XII RPL 1']);
+        $student1 = Student::factory()->create([
+            'name' => 'Muhammad Rifqi',
+            'nis' => '112233',
+            'status' => 'aktif',
+            'class_room_id' => $classRoom->id,
+        ]);
+        $student2 = Student::factory()->create([
+            'name' => 'Siti Aisyah',
+            'nis' => '445566',
+            'status' => 'aktif',
+            'class_room_id' => $classRoom->id,
+        ]);
+
+        $response = $this->actingAs($teller)->getJson(route('payments.search-students', ['q' => 'Rifqi']));
+        $response->assertStatus(200)
+            ->assertJsonCount(1)
+            ->assertJsonFragment([
+                'id' => $student1->id,
+                'name' => 'Muhammad Rifqi',
+                'nis' => '112233',
+                'class_name' => 'XII RPL 1',
+            ])
+            ->assertJsonMissing([
+                'name' => 'Siti Aisyah',
+            ]);
+    }
+
+    public function test_search_students_only_returns_active_students(): void
+    {
+        $teller = User::factory()->teller()->create();
+        Student::factory()->create([
+            'name' => 'Alumni Joko',
+            'nis' => '998877',
+            'status' => 'lulus',
+        ]);
+        $activeStudent = Student::factory()->create([
+            'name' => 'Joko Susanto',
+            'nis' => '998866',
+            'status' => 'aktif',
+        ]);
+
+        $response = $this->actingAs($teller)->getJson(route('payments.search-students', ['q' => 'Joko']));
+        $response->assertStatus(200)
+            ->assertJsonCount(1)
+            ->assertJsonFragment([
+                'id' => $activeStudent->id,
+                'name' => 'Joko Susanto',
+            ])
+            ->assertJsonMissing([
+                'name' => 'Alumni Joko',
+            ]);
+    }
 }

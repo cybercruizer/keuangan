@@ -14,7 +14,7 @@ class AcademicYearManagementTest extends TestCase
     public function test_admin_can_view_academic_years_index(): void
     {
         $admin = User::factory()->admin()->create();
-        AcademicYear::factory()->create(['name' => '2025/2026', 'semester' => 'ganjil']);
+        AcademicYear::factory()->create(['name' => '2025/2026']);
 
         $response = $this->actingAs($admin)->get(route('management.academic-years.index'));
 
@@ -28,7 +28,6 @@ class AcademicYearManagementTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('management.academic-years.store'), [
             'name' => '2026/2027',
-            'semester' => 'ganjil',
             'start_date' => '2026-07-01',
             'end_date' => '2027-06-30',
             'is_active' => '1',
@@ -37,7 +36,6 @@ class AcademicYearManagementTest extends TestCase
         $response->assertRedirect(route('management.academic-years.index'));
         $this->assertDatabaseHas('academic_years', [
             'name' => '2026/2027',
-            'semester' => 'ganjil',
             'is_active' => true,
         ]);
     }

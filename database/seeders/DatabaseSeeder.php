@@ -42,15 +42,13 @@ class DatabaseSeeder extends Seeder
         // 2. Academic Years
         $ayPast = AcademicYear::create([
             'name' => '2024/2025',
-            'semester' => 'genap',
             'is_active' => false,
-            'start_date' => '2025-01-01',
+            'start_date' => '2024-07-01',
             'end_date' => '2025-06-30',
         ]);
 
         $ayActive = AcademicYear::create([
             'name' => '2025/2026',
-            'semester' => 'ganjil',
             'is_active' => true,
             'start_date' => '2025-07-01',
             'end_date' => '2026-06-30',

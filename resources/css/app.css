@@ -239,6 +239,7 @@ body {
 .app-wrapper {
     display: flex;
     min-height: 100vh;
+    position: relative;
 }
 
 .app-sidebar {
@@ -248,6 +249,10 @@ body {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
 }
 
 .app-sidebar-brand {
@@ -269,6 +274,7 @@ body {
 .sidebar-nav {
     padding: 1rem 0.75rem;
     flex-grow: 1;
+    overflow-y: auto;
 }
 
 .nav-section-title {
@@ -322,6 +328,7 @@ body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
     overflow-x: hidden;
 }
 
@@ -338,6 +345,107 @@ body {
 .app-main {
     padding: 1.75rem;
     flex-grow: 1;
+}
+
+/* Mobile Responsive Sidebar */
+.sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        max-width: 85vw;
+        height: 100%;
+        z-index: 1050;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        border-right: none;
+    }
+
+    .app-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 1045;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
+    }
+
+    .sidebar-backdrop.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    .app-topbar {
+        padding: 0 1rem;
+    }
+
+    .app-main {
+        padding: 1rem;
+    }
+}
+
+/* Student Search Suggestion */
+.student-search-container {
+    position: relative;
+}
+
+.student-suggestions-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background-color: #ffffff;
+    border: 1px solid var(--pastel-border);
+    border-radius: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.student-suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    text-decoration: none;
+    color: var(--pastel-text);
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.student-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.student-suggestion-item:hover,
+.student-suggestion-item.active {
+    background-color: var(--pastel-primary-light);
+    color: var(--pastel-primary-text);
 }
 
 /* Stat Cards */

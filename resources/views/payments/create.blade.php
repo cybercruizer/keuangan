@@ -7,22 +7,50 @@
 <div class="row g-3">
     <!-- Student Selector & Snapshot Card -->
     <div class="col-lg-4">
-        <!-- Student Search / Selection -->
+        <!-- Student Search Suggestion Card -->
         <div class="card p-3 mb-3">
-            <h6 class="fw-bold mb-2 pb-2 border-bottom">1. Pilih Siswa</h6>
-            <form method="GET" action="{{ route('payments.create') }}">
-                <div class="mb-3">
-                    <label for="student_id_select" class="form-label small text-muted">Cari Nama / NIS Murid:</label>
-                    <select name="student_id" id="student_id_select" class="form-select" onchange="this.form.submit()" required>
-                        <option value="">-- Pilih Siswa --</option>
-                        @foreach($students as $st)
-                            <option value="{{ $st->id }}" {{ ($selectedStudent && $selectedStudent->id == $st->id) ? 'selected' : '' }}>
-                                {{ $st->nis }} - {{ $st->name }} ({{ $st->classRoom?->name ?: 'Tanpa Kelas' }})
-                            </option>
-                        @endforeach
-                    </select>
+            <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                <h6 class="fw-bold mb-0">1. Cari & Pilih Siswa</h6>
+                @if($selectedStudent)
+                    <a href="{{ route('payments.create') }}" class="btn btn-sm btn-light text-danger py-0 px-2" style="font-size: 0.78rem;" title="Reset pilihan siswa">
+                        <i class="bi bi-x-circle me-1"></i> Ganti Siswa
+                    </a>
+                @endif
+            </div>
+
+            <div class="student-search-container position-relative" id="studentSearchContainer">
+                <label for="student_search_input" class="form-label small text-muted mb-1">
+                    Cari Nama / NIS / NISN Murid:
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="bi bi-search" id="searchIcon"></i>
+                        <span class="spinner-border spinner-border-sm text-pastel-primary d-none" id="searchSpinner" role="status" style="width: 0.9rem; height: 0.9rem;"></span>
+                    </span>
+                    <input type="text"
+                           id="student_search_input"
+                           class="form-control border-start-0"
+                           placeholder="Ketik nama atau NIS murid..."
+                           value="{{ $selectedStudent ? $selectedStudent->nis . ' - ' . $selectedStudent->name : '' }}"
+                           autocomplete="off">
+                    @if($selectedStudent)
+                        <a href="{{ route('payments.create') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center" title="Hapus pilihan">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    @endif
                 </div>
-            </form>
+
+                <!-- Suggestions dropdown results -->
+                <div id="studentSuggestionsMenu" class="student-suggestions-menu" style="display: none;">
+                    <div id="studentSuggestionsList">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <div class="mt-2 text-muted" style="font-size: 0.74rem;">
+                    <i class="bi bi-lightning-charge me-1 text-warning"></i>Ketik minimal 1 karakter untuk menampilkan saran nama siswa secara otomatis.
+                </div>
+            </div>
         </div>
 
         @if($selectedStudent)
@@ -59,7 +87,7 @@
         @else
             <div class="card p-4 text-center text-muted">
                 <i class="bi bi-search fs-1 mb-2 opacity-50"></i>
-                <p class="small mb-0">Silakan pilih siswa pada dropdown di atas untuk memuat tagihan tertunggak.</p>
+                <p class="small mb-0">Ketik nama atau NIS siswa pada kolom pencarian di atas untuk memilih siswa dan memuat tagihannya.</p>
             </div>
         @endif
     </div>
@@ -279,7 +307,10 @@
         });
 
         currentTotal = sum;
-        document.getElementById('display_total_payment').innerText = 'Rp ' + sum.toLocaleString('id-ID');
+        const totalPaymentEl = document.getElementById('display_total_payment');
+        if (totalPaymentEl) {
+            totalPaymentEl.innerText = 'Rp ' + sum.toLocaleString('id-ID');
+        }
 
         const submitBtn = document.getElementById('submitPaymentBtn');
         if (submitBtn) {
@@ -295,7 +326,204 @@
 
         const cashGiven = parseFloat(cashGivenInput.value) || 0;
         const change = Math.max(0, cashGiven - currentTotal);
-        document.getElementById('display_change').innerText = 'Rp ' + change.toLocaleString('id-ID');
+        const displayChangeEl = document.getElementById('display_change');
+        if (displayChangeEl) {
+            displayChangeEl.innerText = 'Rp ' + change.toLocaleString('id-ID');
+        }
     }
+
+    // Dynamic Student Search Suggestion
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('student_search_input');
+        const suggestionsMenu = document.getElementById('studentSuggestionsMenu');
+        const suggestionsList = document.getElementById('studentSuggestionsList');
+        const searchIcon = document.getElementById('searchIcon');
+        const searchSpinner = document.getElementById('searchSpinner');
+
+        if (!searchInput || !suggestionsMenu || !suggestionsList) return;
+
+        let debounceTimeout = null;
+        let activeIndex = -1;
+        let abortController = null;
+
+        function showLoading() {
+            if (searchIcon) searchIcon.classList.add('d-none');
+            if (searchSpinner) searchSpinner.classList.remove('d-none');
+        }
+
+        function hideLoading() {
+            if (searchSpinner) searchSpinner.classList.add('d-none');
+            if (searchIcon) searchIcon.classList.remove('d-none');
+        }
+
+        function closeSuggestions() {
+            suggestionsMenu.style.display = 'none';
+            activeIndex = -1;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderSuggestions(students, query) {
+            activeIndex = -1;
+
+            if (!students || students.length === 0) {
+                suggestionsList.innerHTML = `
+                    <div class="p-3 text-center text-muted small">
+                        <i class="bi bi-info-circle d-block mb-1 fs-5 text-secondary"></i>
+                        Tidak ada siswa ditemukan untuk "<strong>${escapeHtml(query)}</strong>"
+                    </div>
+                `;
+                suggestionsMenu.style.display = 'block';
+                return;
+            }
+
+            let html = '';
+            students.forEach((student, index) => {
+                const isBeasiswa100 = student.category_label.includes('100');
+                const isBeasiswa50 = student.category_label.includes('50');
+                const badgeClass = isBeasiswa100 ? 'badge-pastel-accent' : (isBeasiswa50 ? 'badge-pastel-warning' : 'badge-pastel-primary');
+
+                html += `
+                    <div class="student-suggestion-item" data-index="${index}" data-url="${student.select_url}">
+                        <div class="me-2 overflow-hidden">
+                            <div class="fw-semibold text-truncate text-dark" style="font-size: 0.9rem;">${escapeHtml(student.name)}</div>
+                            <small class="text-muted d-block" style="font-size: 0.74rem;">
+                                NIS: <span class="fw-medium text-dark">${escapeHtml(student.nis || '-')}</span> &bull; 
+                                Kelas: <span class="fw-medium text-dark">${escapeHtml(student.class_name)}</span>
+                            </small>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="badge ${badgeClass}" style="font-size: 0.68rem;">${escapeHtml(student.category_label)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            suggestionsList.innerHTML = html;
+            suggestionsMenu.style.display = 'block';
+
+            suggestionsList.querySelectorAll('.student-suggestion-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const url = this.getAttribute('data-url');
+                    if (url) {
+                        window.location.href = url;
+                    }
+                });
+            });
+        }
+
+        function fetchSuggestions(query) {
+            showLoading();
+
+            if (abortController) {
+                abortController.abort();
+            }
+            abortController = new AbortController();
+
+            const searchUrl = `{{ route('payments.search-students') }}?q=${encodeURIComponent(query)}`;
+
+            fetch(searchUrl, {
+                signal: abortController.signal,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Network error');
+                return res.json();
+            })
+            .then(data => {
+                hideLoading();
+                renderSuggestions(data, query);
+            })
+            .catch(err => {
+                if (err.name === 'AbortError') return;
+                hideLoading();
+                suggestionsList.innerHTML = `
+                    <div class="p-3 text-center text-danger small">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Gagal memuat pencarian data siswa.
+                    </div>
+                `;
+                suggestionsMenu.style.display = 'block';
+            });
+        }
+
+        searchInput.addEventListener('input', function () {
+            const val = this.value.trim();
+            clearTimeout(debounceTimeout);
+
+            if (val.length === 0) {
+                closeSuggestions();
+                return;
+            }
+
+            debounceTimeout = setTimeout(() => {
+                fetchSuggestions(val);
+            }, 250);
+        });
+
+        searchInput.addEventListener('focus', function () {
+            this.select();
+            const val = this.value.trim();
+            if (val.length > 0) {
+                fetchSuggestions(val);
+            } else {
+                fetchSuggestions('');
+            }
+        });
+
+        searchInput.addEventListener('keydown', function (e) {
+            const items = suggestionsList.querySelectorAll('.student-suggestion-item');
+            if (!items.length || suggestionsMenu.style.display === 'none') {
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = (activeIndex + 1 >= items.length) ? 0 : activeIndex + 1;
+                updateActiveHighlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = (activeIndex - 1 < 0) ? items.length - 1 : activeIndex - 1;
+                updateActiveHighlight(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeIndex >= 0 && items[activeIndex]) {
+                    items[activeIndex].click();
+                } else if (items.length > 0) {
+                    items[0].click();
+                }
+            } else if (e.key === 'Escape') {
+                closeSuggestions();
+            }
+        });
+
+        function updateActiveHighlight(items) {
+            items.forEach((item, idx) => {
+                if (idx === activeIndex) {
+                    item.classList.add('active');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            const container = document.getElementById('studentSearchContainer');
+            if (container && !container.contains(e.target)) {
+                closeSuggestions();
+            }
+        });
+    });
 </script>
 @endsection

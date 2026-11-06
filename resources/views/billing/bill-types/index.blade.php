@@ -10,9 +10,14 @@
         <p class="text-muted small mb-0">Kelola master biaya sekolah (SPP, Uang Gedung, Praktik) dan aturan diskon beasiswa.</p>
     </div>
     @if(auth()->user()->hasRole('admin'))
-        <a href="{{ route('billing.bill-types.create') }}" class="btn btn-pastel-primary">
-            <i class="bi bi-plus-lg me-1"></i> Tambah Jenis Tagihan
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importBillTypesModal">
+                <i class="bi bi-file-earmark-arrow-up me-1"></i> Import CSV
+            </button>
+            <a href="{{ route('billing.bill-types.create') }}" class="btn btn-pastel-primary">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Jenis Tagihan
+            </a>
+        </div>
     @endif
 </div>
 
@@ -115,4 +120,51 @@
         </div>
     @endif
 </div>
+
+@if(auth()->user()->hasRole('admin'))
+    <!-- Modal Import Jenis Tagihan -->
+    <div class="modal fade" id="importBillTypesModal" tabindex="-1" aria-labelledby="importBillTypesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('billing.bill-types.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold" id="importBillTypesModalLabel">
+                            <i class="bi bi-file-earmark-arrow-up me-1 text-pastel-primary"></i> Import Jenis Tagihan dari CSV
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info border-0 small mb-3" style="background-color: var(--pastel-accent-light); color: var(--pastel-accent-text);">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            Gunakan file <strong>.csv</strong> dengan header:
+                            <code>nama, tarif, tipe, bisa_diskon, diskon_50, diskon_100, keterangan</code>.<br>
+                            <small class="text-muted d-block mt-1">Tipe yang didukung: <em>spp</em>, <em>custom</em>, <em>tabungan</em>.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bill_type_csv_file" class="form-label small fw-semibold">Pilih File CSV <span class="text-danger">*</span></label>
+                            <input type="file" name="file" id="bill_type_csv_file" class="form-control" accept=".csv,text/csv" required>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded border bg-light">
+                            <div class="small text-muted">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Format belum ada?
+                            </div>
+                            <a href="{{ route('billing.bill-types.template') }}" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.8rem;">
+                                <i class="bi bi-download me-1"></i> Unduh Template CSV
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-pastel-primary">
+                            <i class="bi bi-upload me-1"></i> Mulai Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endif
 @endsection

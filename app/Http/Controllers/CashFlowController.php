@@ -10,10 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CashFlowController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|StreamedResponse
     {
         $period = $request->input('period', 'monthly'); // daily, monthly, yearly, custom
         $type = $request->input('type'); // null/all, income, expense
@@ -55,6 +56,34 @@ class CashFlowController extends Controller
         $totalIncome = (float) (clone $summaryQuery)->where('type', 'income')->sum('amount');
         $totalExpense = (float) (clone $summaryQuery)->where('type', 'expense')->sum('amount');
         $netBalance = $totalIncome - $totalExpense;
+
+        if ($request->boolean('export')) {
+            $exportData = (clone $query)->orderBy('date', 'asc')->orderBy('id', 'asc')->get();
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename=laporan_arus_kas.csv',
+            ];
+
+            return response()->streamDownload(function () use ($exportData) {
+                $handle = fopen('php://output', 'w');
+                if ($handle === false) {
+                    return;
+                }
+                fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($handle, ['Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal (Rp)', 'Dicatat Oleh']);
+                foreach ($exportData as $cf) {
+                    fputcsv($handle, [
+                        $cf->date->format('Y-m-d'),
+                        $cf->type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                        $cf->category,
+                        $cf->description,
+                        $cf->amount,
+                        $cf->user?->name ?? 'Sistem',
+                    ]);
+                }
+                fclose($handle);
+            }, 'laporan_arus_kas.csv', $headers);
+        }
 
         $cashFlows = $query->orderBy('date', 'desc')
             ->orderBy('id', 'desc')

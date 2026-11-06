@@ -145,7 +145,7 @@
                 <div class="p-3 rounded" style="background-color: var(--pastel-bg); border: 1px dashed var(--pastel-border);">
                     <div class="d-flex justify-content-between py-1 small">
                         <span class="text-muted">Tahun Ajaran Aktif:</span>
-                        <span class="fw-semibold">{{ $activeYear ? $activeYear->name . ' (' . ucfirst($activeYear->semester) . ')' : '-' }}</span>
+                        <span class="fw-semibold">{{ $activeYear ? $activeYear->name : '-' }}</span>
                     </div>
                     <div class="d-flex justify-content-between py-1 small">
                         <span class="text-muted">Total Rombel:</span>

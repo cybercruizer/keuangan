@@ -22,7 +22,7 @@
                     <select name="academic_year_id" id="academic_year_id" class="form-select @error('academic_year_id') is-invalid @enderror" required>
                         @foreach($academicYears as $year)
                             <option value="{{ $year->id }}" {{ old('academic_year_id', $classRoom->academic_year_id) == $year->id ? 'selected' : '' }}>
-                                {{ $year->name }} ({{ ucfirst($year->semester) }}) {{ $year->is_active ? '★ Aktif' : '' }}
+                                {{ $year->name }} {{ $year->is_active ? '★ Aktif' : '' }}
                             </option>
                         @endforeach
                     </select>

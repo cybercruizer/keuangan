@@ -9,10 +9,17 @@
         <h5 class="fw-bold mb-1">Rombongan Belajar (Rombel)</h5>
         <p class="text-muted small mb-0">Kelola kelas berdasarkan tahun ajaran, tingkat, dan program keahlian.</p>
     </div>
-    @if(auth()->user()->hasRole('admin'))
-        <a href="{{ route('management.class-rooms.create') }}" class="btn btn-pastel-primary">
-            <i class="bi bi-plus-lg me-1"></i> Tambah Rombel
-        </a>
+    @if(auth()->user()->hasRole(['admin', 'teller']))
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importClassRoomsModal">
+                <i class="bi bi-file-earmark-arrow-up me-1"></i> Import CSV
+            </button>
+            @if(auth()->user()->hasRole('admin'))
+                <a href="{{ route('management.class-rooms.create') }}" class="btn btn-pastel-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah Rombel
+                </a>
+            @endif
+        </div>
     @endif
 </div>
 
@@ -25,7 +32,7 @@
                 <option value="">Semua Tahun Ajaran</option>
                 @foreach($academicYears as $year)
                     <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
-                        {{ $year->name }} ({{ ucfirst($year->semester) }}) {{ $year->is_active ? '★ Aktif' : '' }}
+                        {{ $year->name }} {{ $year->is_active ? '★ Aktif' : '' }}
                     </option>
                 @endforeach
             </select>
@@ -130,4 +137,64 @@
         </div>
     @endif
 </div>
+
+@if(auth()->user()->hasRole(['admin', 'teller']))
+    <!-- Modal Import Rombel -->
+    <div class="modal fade" id="importClassRoomsModal" tabindex="-1" aria-labelledby="importClassRoomsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('management.class-rooms.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold" id="importClassRoomsModalLabel">
+                            <i class="bi bi-file-earmark-arrow-up me-1 text-pastel-primary"></i> Import Rombel & Kelas dari CSV
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info border-0 small mb-3" style="background-color: var(--pastel-accent-light); color: var(--pastel-accent-text);">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            Gunakan file <strong>.csv</strong> dengan kolom header:
+                            <code>nama, tingkat, kode_jurusan, tahun_ajaran</code>.<br>
+                            <small class="text-muted d-block mt-1">Contoh tingkat: <em>X</em>, <em>XI</em>, <em>XII</em>. Contoh jurusan: <em>RPL</em>, <em>TKRO</em>, <em>TBSM</em>.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="classroom_csv_file" class="form-label small fw-semibold">Pilih File CSV <span class="text-danger">*</span></label>
+                            <input type="file" name="file" id="classroom_csv_file" class="form-control" accept=".csv,text/csv" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="import_academic_year_id" class="form-label small fw-semibold">Tahun Ajaran Target (Opsional / Default)</label>
+                            <select name="academic_year_id" id="import_academic_year_id" class="form-select">
+                                <option value="">-- Gunakan Tahun di CSV / Tahun Aktif --</option>
+                                @foreach($academicYears as $year)
+                                    <option value="{{ $year->id }}" {{ $year->is_active ? 'selected' : '' }}>
+                                        {{ $year->name }} {{ $year->is_active ? '★ Aktif' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted" style="font-size: 0.74rem;">Jika kolom <code>tahun_ajaran</code> di CSV kosong, opsi ini akan digunakan.</small>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded border bg-light">
+                            <div class="small text-muted">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Belum ada format?
+                            </div>
+                            <a href="{{ route('management.class-rooms.template') }}" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.8rem;">
+                                <i class="bi bi-download me-1"></i> Unduh Template CSV
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-pastel-primary">
+                            <i class="bi bi-upload me-1"></i> Mulai Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endif
 @endsection

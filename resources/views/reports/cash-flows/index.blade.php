@@ -15,6 +15,9 @@
                 <i class="bi bi-dash-circle me-1"></i> Catat Pengeluaran Kas
             </button>
         @endif
+        <a href="{{ route('reports.cash-flows.index', array_merge(request()->all(), ['export' => 1])) }}" class="btn btn-light">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+        </a>
         <a href="{{ route('reports.cash-flows.print', request()->all()) }}" target="_blank" class="btn btn-light">
             <i class="bi bi-printer me-1"></i> Cetak Laporan
         </a>

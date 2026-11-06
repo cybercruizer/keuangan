@@ -25,17 +25,6 @@
                     @enderror
                 </div>
 
-                <div class="mb-3">
-                    <label for="semester" class="form-label">Semester <span class="text-danger">*</span></label>
-                    <select name="semester" id="semester" class="form-select @error('semester') is-invalid @enderror" required>
-                        <option value="ganjil" {{ old('semester', $academicYear->semester) === 'ganjil' ? 'selected' : '' }}>Ganjil</option>
-                        <option value="genap" {{ old('semester', $academicYear->semester) === 'genap' ? 'selected' : '' }}>Genap</option>
-                    </select>
-                    @error('semester')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
                 <div class="row g-2 mb-3">
                     <div class="col-sm-6">
                         <label for="start_date" class="form-label">Tanggal Mulai</label>

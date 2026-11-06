@@ -9,7 +9,10 @@
         <h5 class="fw-bold mb-1">Rekap Pembayaran per Rombel</h5>
         <p class="text-muted small mb-0">Laporan capaian penerimaan kas dan persentase kelunasan per kelas / rombongan belajar.</p>
     </div>
-    <div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('reports.recaps.class-rooms', array_merge(request()->all(), ['export' => 1])) }}" class="btn btn-light">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+        </a>
         <a href="{{ route('reports.recaps.class-rooms', array_merge(request()->all(), ['print' => 1])) }}" target="_blank" class="btn btn-light">
             <i class="bi bi-printer me-1"></i> Cetak Rekap Rombel
         </a>
@@ -65,7 +68,7 @@
                 <option value="">Semua Tahun Ajaran</option>
                 @foreach($academicYears as $year)
                     <option value="{{ $year->id }}" {{ $selectedYearId == $year->id ? 'selected' : '' }}>
-                        {{ $year->name }} ({{ ucfirst($year->semester) }}) {{ $year->is_active ? '★ Aktif' : '' }}
+                        {{ $year->name }} {{ $year->is_active ? '★ Aktif' : '' }}
                     </option>
                 @endforeach
             </select>

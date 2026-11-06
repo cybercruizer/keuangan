@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BillType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class BillTypeManagementTest extends TestCase
@@ -79,6 +80,48 @@ class BillTypeManagementTest extends TestCase
             'id' => $billType->id,
             'name' => 'SPP Baru',
             'amount' => 250000,
+        ]);
+    }
+
+    public function test_admin_can_download_bill_type_template(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->get(route('billing.bill-types.template'));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Disposition', 'attachment; filename=template_jenis_tagihan.csv');
+    }
+
+    public function test_admin_can_import_bill_types_from_csv(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $csvContent = "nama,tarif,tipe,bisa_diskon,diskon_50,diskon_100,keterangan\n";
+        $csvContent .= "SPP Import,300000,spp,ya,50,100,Tagihan SPP\n";
+        $csvContent .= "Seragam Import,500000,custom,tidak,0,0,Seragam\n";
+
+        $file = UploadedFile::fake()->createWithContent('tagihan.csv', $csvContent);
+
+        $response = $this->actingAs($admin)->post(route('billing.bill-types.import'), [
+            'file' => $file,
+        ]);
+
+        $response->assertRedirect(route('billing.bill-types.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('bill_types', [
+            'name' => 'SPP Import',
+            'amount' => 300000,
+            'type' => 'spp',
+            'is_discountable' => true,
+        ]);
+
+        $this->assertDatabaseHas('bill_types', [
+            'name' => 'Seragam Import',
+            'amount' => 500000,
+            'type' => 'custom',
+            'is_discountable' => false,
         ]);
     }
 }
